@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html ng-app="imageBrowserApp">
+<head>
+    <title>Image Browser</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <style>
+        .image-row {
+            white-space: nowrap;
+        }
+        .image {
+            display: inline-block;
+            margin-right: 10px;
+        }
+    </style>
+</head>
+<body ng-controller="ImageController">
+    <h1>Image Browser</h1>
+    <div ng-repeat="row in imageRows" class="image-row">
+        <div ng-repeat="image in row" class="image">
+            <img ng-src="{{image.url}}" ng-click="selectImage(image)" width="50" height="50">
+        </div>
+    </div>
+    <div ng-show="selectedImage">
+        <h2>Selected Image</h2>
+        <img ng-src="{{selectedImage.url}}" width="350" height="350">
+    </div>
+
+    <script>
+        angular.module('imageBrowserApp', [])
+            .controller('ImageController', function($scope, $http) {
+                $scope.imageRows = [];
+                $scope.selectedImage = null;
+
+                // Fetching images from picsum.photos
+                $http.get('https://picsum.photos/list')
+                    .then(function(response) {
+                        var images = response.data.map(function(imageData) {
+                            return {
+                                id: imageData.id,
+                                url: 'https://picsum.photos/id/' + imageData.id + '/50/50'
+                            };
+                        });
+
+                        // Limit to 3 rows with 10 images per row
+                        var imagesPerRow = 10;
+                        var numRows = 3;
+                        for (var i = 0; i < images.length && i < numRows * imagesPerRow; i += imagesPerRow) {
+                            $scope.imageRows.push(images.slice(i, i + imagesPerRow));
+                        }
+                    });
+
+                $scope.selectImage = function(image) {
+                    $scope.selectedImage = {
+                        id: image.id,
+                        url: 'https://picsum.photos/id/' + image.id + '/350/350'
+                    };
+                };
+            });
+    </script>
+</body>
+</html>
